@@ -143,9 +143,9 @@ class gm_contact_email_send {
 
         $mail = new PHPMailer;
 
-        $mail->setFrom('contact@gabrielmioni.com', 'Contact Form');
-        $mail->addAddress('gabriel.mioni@gmail.com', 'Gabriel');
-        $mail->Subject  = 'Contact From gabrielmioni.com';
+        $mail->setFrom('contact@example.com', 'Contact Form'); // Needs real address
+        $mail->addAddress('person@example.com', 'Name');    // Needs real address
+        $mail->Subject  = 'Contact From website.com';       // Needs webpage
         $mail->Body     = $content;
 
         if(!$mail->Send())
