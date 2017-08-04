@@ -10,6 +10,7 @@ Author: Gabriel Mioni
 Author URI: http://gabrielmioni.com
 */
 
+session_start();
 
 // Plugin version, bump it up if you update the plugin
 define( 'GM_CONTACT_VERSION', '1.0' );
@@ -34,8 +35,33 @@ function gm_add_contact_js() {
     wp_localize_script( 'gm_contact', 'gm_contact', $params );
 }
 
-// Ajax handler
+// Shortcode for the contact form.
+add_shortcode('gm-email-form', 'gm_email_form');
+function gm_email_form() {
+    require_once('gm_contact_form.php');
 
+    $auto_p_flag = false;
+
+    // If wpautop filter is set, temporarily disable it.
+    if ( has_filter( 'the_content', 'wpautop' ) )
+    {
+        $auto_p_flag = true;
+        remove_filter( 'the_content', 'wpautop' );
+        remove_filter( 'the_excerpt', 'wpautop' );
+    }
+
+    $build_html = new gm_contact_form();
+    echo $build_html->return_html();
+
+    // If wpautop had been set previously, re-enable it.
+    if ($auto_p_flag === true)
+    {
+        add_filter( 'the_content', 'wpautop' );
+        add_filter( 'the_excerpt', 'wpautop' );
+    }
+}
+
+// Ajax handler
 add_action('wp_ajax_nopriv_gm_contact_ajax', 'gm_contact_ajax');
 add_action('wp_ajax_gm_contact_ajax', 'gm_contact_ajax');
 function gm_contact_ajax() {
