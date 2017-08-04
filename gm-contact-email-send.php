@@ -2,16 +2,31 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-includes/class-phpmailer.php');
 
+/**
+ * Validates form inputs from the HTML form built at gm_contact_form.php. Most interaction with this class will
+ * be via an Ajax call made by the gm_contact_ajax() function found in gm-contact-email.php, however if JS is disabled
+ * the class is also called at form-action.php
+ *
+ * If request is via Ajax, the class can return a response. Returns 1 if submit is successful. Else returns a JSON
+ * encoded array that can be parsed to display error messages. If JS *is* disabled, previously submitted input values
+ * and validation error messages are stored in $_SESSION variables that are used to display content and then destroyed
+ * at gm_contact_form.php
+ */
 class gm_contact_email_send {
 
+    /** @var bool|null  flag for whether the honeypot input is empty. */
     protected $honey_pot_is_empty = null;
+
+    /** @var bool|null  flag for whether request is Ajax.  */
     protected $is_ajax            = null;
 
+    /** @var array  Holds input data from the HTML contact form. */
     protected $input_data   = array();
+    /** @var array  Holds array elements representing which inputs failed and why. 0 = empty, -1 = invalid. */
     protected $errors       = array();
+    /** @var array  Holds text error messages that will be displayed on the email contact form. */
     protected $error_msgs   = array();
 
-    protected $email_sent   = false;
 
     public function __construct()
     {
@@ -25,9 +40,9 @@ class gm_contact_email_send {
 
         $this->error_msgs = $this->build_error_msgs($this->errors);
 
-        $this->email_sent = $this->try_send_email($this->error_msgs, $this->input_data);
+        $this->try_send_email($this->error_msgs, $this->input_data);
 
-        $this->non_ajax_processing($this->is_ajax, $this->error_msgs);
+        $this->non_ajax_processing($this->is_ajax, $this->error_msgs, $this->input_data);
     }
 
     /**
@@ -75,7 +90,6 @@ class gm_contact_email_send {
 
         if ($validate === false)
         {
-//            $error_array[$email_index] = false;
             $error_array[$email_index] = -1;
         }
 
@@ -167,20 +181,20 @@ class gm_contact_email_send {
      * - 3. If there were errors, set $_SESSION messages.
      * - 4. Redirect to referer.
      *
-     * @param $is_ajax
-     * @param array $error_msgs
+     * @param $is_ajax  bool    Flag stating whether or not the request is Ajax. Set by $_POST['is_ajax']
+     * @param array     $error_msgs     Error messages array. Used to build error session variables.
+     * @param array     $input_data     Input data.
      */
-    protected function non_ajax_processing($is_ajax, array $error_msgs)
+    protected function non_ajax_processing($is_ajax, array $error_msgs, array $input_data)
     {
         if ($is_ajax === false)
         {
-            $this->unset_session_msgs();
-
             if (empty($error_msgs))
             {
-                $_SESSION['success'] = 1;
+                $_SESSION['gm_success'] = 1;
             } else {
-                $this->set_error_sessions($error_msgs);
+                $this->set_session_message($error_msgs, 'gm_error_');
+                $this->set_session_message($input_data, 'gm_value_');
             }
 
             $this->do_redirect();
@@ -188,25 +202,15 @@ class gm_contact_email_send {
     }
 
     /**
-     * Unset all the $_SESSION messages.
+     * Loop through $error_msgs and set $_SESSION error messages with the value of each element in $error_msgs
      *
-     * @return void
+     * @param array $error_msgs
      */
-    protected function unset_session_msgs()
-    {
-        unset($_SESSION['success']);
-        unset($_SESSION['error_generic']);
-        unset($_SESSION['error_name']);
-        unset($_SESSION['error_email']);
-        unset($_SESSION['error_company']);
-        unset($_SESSION['error_message']);
-    }
-
-    protected function set_error_sessions(array $error_msgs)
+    protected function set_session_message(array $error_msgs, $prepend_key)
     {
         foreach ($error_msgs as $key=> $value)
         {
-            $session_index = 'error_' . $key;
+            $session_index = $prepend_key . $key;
             $_SESSION[$session_index] = $value;
         }
     }
@@ -216,9 +220,8 @@ class gm_contact_email_send {
      */
     protected function do_redirect()
     {
-        $referrer = strtok($_SERVER["HTTP_REFERER"],'?');
-
-        header('Location: ' . $referrer);
+        header('Location: ' . strtok($_SERVER["HTTP_REFERER"],'?'));
+        exit();
     }
 
     /**
@@ -229,6 +232,7 @@ class gm_contact_email_send {
     public function return_ajax_msg()
     {
         $error_msgs = $this->error_msgs;
+
         if (empty($error_msgs))
         {
             return 1;
