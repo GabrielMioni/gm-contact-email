@@ -35,7 +35,9 @@ function gm_add_contact_js() {
     wp_localize_script( 'gm_contact', 'gm_contact', $params );
 }
 
-// Shortcode for the contact form.
+/* *******************************
+ * - Contact Form Shortcode
+ * *******************************/
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
     require_once('gm_contact_form.php');
@@ -61,7 +63,121 @@ function gm_email_form() {
     }
 }
 
-// Ajax handler
+/* *******************************
+ * - Settings Page
+ * *******************************/
+
+add_action('admin_menu', 'gm_contact_add_page');
+function gm_contact_add_page()
+{
+    add_options_page('GM Contact', 'GM Contact', 'manage_options', 'gm_contact', 'gm_contact_option_page');
+}
+
+// Display GM Contact Settings
+function gm_contact_option_page()
+{
+    ?>
+    <form action="options.php" method="post">
+        <?php   settings_fields('gm_contact_address');  ?>
+        <?php   do_settings_sections('gm_contact');     ?>
+        <input name="Submit" type="submit" class="button button-primary" value="Save Address">
+    </form>
+
+    <?php
+}
+
+// Register Settings
+add_action('admin_init', 'gm_contact_admin_init');
+function gm_contact_admin_init()
+{
+    register_setting('gm_contact_address', 'gm_contact_address', 'gm_contact_validate_address');
+    add_settings_section('gm_contact_main', 'GM Contact Settings', 'gm_contact_section_text', 'gm_contact');
+    add_settings_field('gm_contact_text_string', 'Address:', 'gm_contact_address_input', 'gm_contact', 'gm_contact_main');
+    add_settings_field('gm_contact_name_string', 'Name:', 'gm_contact_name_input', 'gm_contact', 'gm_contact_main');
+}
+
+function gm_contact_section_text()
+{
+    echo '<p>Enter your name and email address below. This will set the recipient\'s name and email address for the Contact Form!</p>';
+}
+
+
+function gm_contact_address_input()
+{
+    $option  = get_option('gm_contact_address');
+
+    $address = '';
+
+    if (is_array($option))
+    {
+        $address = isset($option['address']) ? $option['address'] : '';
+    }
+
+    $input =  "<input id='address' name='gm_contact_address[address]' type='text' value='$address'>";
+
+    echo $input;
+}
+
+function gm_contact_name_input()
+{
+    $option  = get_option('gm_contact_address');
+
+    $name = '';
+
+    if (is_array($option))
+    {
+        $name    = isset($option['name']) ? $option['name'] : '';
+    }
+
+    $input = "<input id='name' name='gm_contact_address[name]' type='text' value='$name'>";
+
+    echo $input;
+}
+
+
+function gm_contact_validate_address( $input )
+{
+    $current = get_option('gm_contact_address');
+
+    $check['address'] = strip_tags($input['address']);
+    $check['name']    = strip_tags($input['name']);
+
+    $reason = '';
+
+    if (filter_var($check['address'], FILTER_VALIDATE_EMAIL) === false)
+    {
+        $bad_input = $check['address'];
+        $reason = "You submitted '$bad_input.' That value is not in valid format.<br>";
+    }
+
+    if(trim($check['address']) === '')
+    {
+        $reason = 'Address cannot be empty!<br>';
+    }
+    
+    if(trim($check['name'] === ''))
+    {
+        $reason .= 'The name field cannot be blank';
+    }
+
+    if($reason !== '')
+    {
+        add_settings_error(
+            'gm_contact_text_string',
+            'gm_contact_texterror',
+            $reason,
+            'error'
+        );
+        return $current;
+    }
+
+    return $check;
+}
+
+
+/* *******************************
+ * - Ajax Handler
+ * *******************************/
 add_action('wp_ajax_nopriv_gm_contact_ajax', 'gm_contact_ajax');
 add_action('wp_ajax_gm_contact_ajax', 'gm_contact_ajax');
 function gm_contact_ajax() {
