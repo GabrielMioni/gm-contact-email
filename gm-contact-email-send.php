@@ -144,22 +144,26 @@ class gm_contact_email_send {
             return false;
         }
 
-        $name    = $input_data['name'];
-        $email   = $input_data['email'];
-        $company = $input_data['company'];
-        $message = $input_data['message'];
+        $sender_name    = stripslashes($input_data['name']);
+        $sender_email   = $input_data['email'];
+        $Sender_company = stripslashes($input_data['company']);
+        $sender_message = stripslashes($input_data['message']);
 
-        $content  = "Name: $name \n";
-        $content .= "Email: $email \n";
-        $content .= "Company: $company \n\n";
+        $content  = "Name: $sender_name \n";
+        $content .= "Email: $sender_email \n";
+        $content .= "Company: $Sender_company \n\n";
         $content .= "Message: \n\n";
-        $content .= $message;
+        $content .= $sender_message;
 
         $mail = new PHPMailer;
 
-        $mail->setFrom('contact@example.com', 'Contact Form'); // Needs real address
-        $mail->addAddress('person@example.com', 'Name');    // Needs real address
-        $mail->Subject  = 'Contact From website.com';       // Needs webpage
+        $option      = get_option('gm_contact_address');
+        $add_address = $option['address'];
+        $add_name    = $option['name'];
+
+        $mail->setFrom($sender_email, $sender_name);
+        $mail->addAddress($add_address, $add_name);
+        $mail->Subject  = 'Contact From gabrielmioni.com';
         $mail->Body     = $content;
 
         if(!$mail->Send())
@@ -173,6 +177,7 @@ class gm_contact_email_send {
             return true;
         }
     }
+
 
     /**
      * If this isn't an Ajax call, then do the following:
@@ -204,7 +209,8 @@ class gm_contact_email_send {
     /**
      * Loop through $error_msgs and set $_SESSION error messages with the value of each element in $error_msgs
      *
-     * @param array $error_msgs
+     * @param   array   $error_msgs     Array of error messages.
+     * @param   string  $prepend_key    The value that should be used to build the begining of the new $_SESSION index.
      */
     protected function set_session_message(array $error_msgs, $prepend_key)
     {
