@@ -120,7 +120,7 @@ class gm_contact_email_send {
                     break;
                 default:
                     // Something is amiss
-                    $msg = ucfirst("$key cannot be awesome blank");
+                    $msg = ucfirst("The $key input is incorrect.");
                     break;
             }
             $error_msgs[$key] = $msg;
@@ -157,13 +157,15 @@ class gm_contact_email_send {
 
         $mail = new PHPMailer;
 
-        $option      = get_option('gm_contact_address');
-        $add_address = $option['address'];
-        $add_name    = $option['name'];
+        $gm_options        = $this->get_receiver_data();
+
+        $recipient_address = $gm_options['address'];
+        $recipient_name    = $gm_options['name'];
+        $recipient_site    = $this->get_sitename();
 
         $mail->setFrom($sender_email, $sender_name);
-        $mail->addAddress($add_address, $add_name);
-        $mail->Subject  = 'Contact From gabrielmioni.com';
+        $mail->addAddress($recipient_address, $recipient_name);
+        $mail->Subject  = 'Contact From ' . $recipient_site;
         $mail->Body     = $content;
 
         if(!$mail->Send())
@@ -178,6 +180,60 @@ class gm_contact_email_send {
         }
     }
 
+    /**
+     * Looks for options data from the gm_contact_address table. If no data is found, try getting an email address
+     * from the admin_email table.
+     *
+     * @return array    Array will contain 'address' and 'name' elements.
+     */
+    function get_receiver_data()
+    {
+        $gm_options = get_option('gm_contact_address');
+
+        $receiver_data = array();
+
+        $receiver_data['address'] = isset($gm_options['address']) ? $gm_options['address'] : '';
+        $receiver_data['name'] = isset($gm_options['name']) ? $gm_options['name'] : 'Admin';
+
+        if ($receiver_data['address'] !== '')
+        {
+            $validate_gm_email = filter_var($receiver_data['address'], FILTER_SANITIZE_EMAIL);
+
+            if ($validate_gm_email !== false)
+            {
+                return $receiver_data;
+            }
+        }
+
+        $admin_email = get_option('admin_email');
+
+        $receiver_data['address'] = is_string($admin_email) ? $admin_email : '';
+
+        return $receiver_data;
+
+    }
+
+    /**
+     * Check WordPress option table site_url for data. If a URL is present, get the site name. Else return
+     * the generic 'Contact Form.'
+     *
+     * @return string   If a URL is present on the site_url table, return site name. Else return 'Contact Form.'
+     */
+    function get_sitename()
+    {
+        $generic = 'Contact Form';
+        $wp_url = get_option('site_url');
+
+        if (is_string($wp_url) && trim($wp_url) !== '')
+        {
+            $url_parse = parse_url($wp_url);
+            $site_name = isset($url_parse['host']) ? $url_parse['host'] : $generic;
+
+            return $site_name;
+        } else {
+            return $generic;
+        }
+    }
 
     /**
      * If this isn't an Ajax call, then do the following:
