@@ -9,6 +9,10 @@ form#contact {
     margin-bottom: 5px;
 }
 
+#contact label .asterisk {
+    vertical-align: middle;
+}
+
 #contact label,
 #contact input[type='text'],
 #contact textarea

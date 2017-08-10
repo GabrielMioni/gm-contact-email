@@ -45,16 +45,16 @@ class gm_contact_form
         $value_message = $this->set_input_value('gm_value_message');
 
         $form = "<form id='contact' method='post' action='$form_action'>
-                    <label for='name'>Your Name <i class='fa fa-asterisk' aria-hidden='true'></i> $error_name</label>
+                    <label for='name'>Your Name <span class='asterisk'>*</span> $error_name</label>
                     <input name='name' value='$value_name' type='text'>
         
-                    <label for='email'>Your Email <i class='fa fa-asterisk' aria-hidden='true'></i> $error_email</label>
+                    <label for='email'>Your Email <span class='asterisk'>*</span> $error_email</label>
                     <input name='email' value='$value_email' type='text'>
         
                     <label for='company'>Company</label>
                     <input name='company' value='$value_company' type='text'>
         
-                    <label for='message'>Message <i class='fa fa-asterisk' aria-hidden='true'></i> $error_message</label>
+                    <label for='message'>Message <span class='asterisk'>*</span> $error_message</label>
                     <textarea name='message'>$value_message</textarea>
                     <input value='Send' name='submit' type='submit'>
                 </form>";
