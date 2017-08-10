@@ -186,7 +186,7 @@ class gm_contact_email_send {
      *
      * @return array    Array will contain 'address' and 'name' elements.
      */
-    function get_receiver_data()
+    protected function get_receiver_data()
     {
         $gm_options = get_option('gm_contact_address');
 
@@ -219,7 +219,7 @@ class gm_contact_email_send {
      *
      * @return string   If a URL is present on the site_url table, return site name. Else return 'Contact Form.'
      */
-    function get_sitename()
+    protected function get_sitename()
     {
         $generic = 'Contact Form';
         $wp_url = get_option('site_url');
