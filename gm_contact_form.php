@@ -33,7 +33,7 @@ class gm_contact_form
      */
     protected function set_form()
     {
-        $form_action = plugin_dir_url( __FILE__ ) . 'form-action.php';
+        $form_action = plugin_dir_url( __FILE__ ) . 'index.php?gm_contact=1';
 
         $error_name    = $this->set_error('gm_error_name');
         $error_email   = $this->set_error('gm_error_email');

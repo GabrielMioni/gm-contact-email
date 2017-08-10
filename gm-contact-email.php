@@ -10,7 +10,10 @@ Author: Gabriel Mioni
 Author URI: http://gabrielmioni.com
 */
 
-session_start();
+if (!isset($_SESSION))
+{
+    session_start();
+}
 
 // Plugin version, bump it up if you update the plugin
 define( 'GM_CONTACT_VERSION', '1.0' );
@@ -202,3 +205,18 @@ function gm_contact_ajax() {
     die();
 }
 
+/* *******************************
+ * - API Handler for non-Ajax
+ * *******************************/
+add_action('init', 'gm_contact_check_api');
+function gm_contact_check_api()
+{
+    $api_set = isset($_GET['gm_contact']) ? true : false;
+
+    if ($api_set === true)
+    {
+        require_once(dirname(__FILE__) . '/gm-contact-email-send.php');
+
+        new gm_contact_email_send();
+    }
+}
