@@ -41,9 +41,19 @@ function gm_add_contact_js() {
 /* *******************************
  * - Contact Form Shortcode
  * *******************************/
+
+// Prepare the gm_contact.css file to be called.
+add_action( 'wp_enqueue_scripts', 'gm_register_css' );
+function gm_register_css() {
+    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm_contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
+}
+
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
     require_once('gm_contact_form.php');
+
+    // Add the gm_contact.css file
+    wp_enqueue_style('gm-contact-css');
 
     $auto_p_flag = false;
 

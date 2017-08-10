@@ -1,0 +1,55 @@
+form#contact {
+    font-family: "Oswald",sans-serif;
+    margin: 0 auto;
+    width: 80%;
+}
+
+#contact label {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+#contact label,
+#contact input[type='text'],
+#contact textarea
+{
+    display: block;
+    min-width: 100%;
+    border-radius: 0;
+    height: 27px;
+}
+
+#content input[type="text"],
+#contact textarea {
+    font-size: 20px;
+    padding: 10px;
+}
+
+#contact input[type="text"] {
+    height: 40px;
+    margin-bottom: 15px;
+}
+
+#contact textarea {
+    min-height: 300px;
+}
+
+#contact > label > .error {
+    background: #FFDBDB;
+    bottom: 2px;
+    color: #FF0000;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: lighter;
+    margin-left: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+#contact > label .fa {
+    bottom: 3px;
+    font-size: 10px;
+    position: relative;
+}
