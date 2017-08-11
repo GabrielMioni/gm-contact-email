@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors',1);
-ini_set('display_startup_errors',1);
-error_reporting(-1);
 /*
 Plugin Name: Gabriel's Contact Email
 Plugin URI: http://gabrielmioni.com
@@ -109,12 +106,13 @@ function gm_contact_admin_init()
     add_settings_field('gm_contact_name_string', 'Name:', 'gm_contact_name_input', 'gm_contact', 'gm_contact_main');
 }
 
+// Basic instructions for the setting page.
 function gm_contact_section_text()
 {
     echo '<p>Enter your name and email address below. This will set the recipient\'s name and email address for the Contact Form!</p>';
 }
 
-
+// Email Address input
 function gm_contact_address_input()
 {
     $option  = get_option('gm_contact_address');
@@ -131,6 +129,7 @@ function gm_contact_address_input()
     echo $input;
 }
 
+// Name input
 function gm_contact_name_input()
 {
     $option  = get_option('gm_contact_address');
@@ -147,8 +146,8 @@ function gm_contact_name_input()
     echo $input;
 }
 
-
-function gm_contact_validate_address( $input )
+// Setting validation
+function gm_contact_validate_settings($input )
 {
     $current = get_option('gm_contact_address');
 
