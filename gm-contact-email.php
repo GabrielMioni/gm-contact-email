@@ -15,39 +15,30 @@ if (!isset($_SESSION))
 // Plugin version, bump it up if you update the plugin
 define( 'GM_CONTACT_VERSION', '1.0' );
 
-// Enqueue the script, in the footer
-add_action( 'template_redirect', 'gm_add_contact_js');
-function gm_add_contact_js() {
+// Register JS
+add_action('wp_enqueue_scripts', 'gm_register_js');
+function gm_register_js()
+{
+    wp_register_script( 'gm-contact-js', plugins_url( '/js/contact.js', __FILE__ ), array('jquery'), GM_CONTACT_VERSION, true );
+}
 
-    // Enqueue the script
-    wp_enqueue_script( 'gm_contact',
-        plugin_dir_url( __FILE__ ).'js/contact.js',
-        array('jquery'), GM_CONTACT_VERSION, true
-    );
-
-    // Get current page protocol.
-    $protocol = isset( $_SERVER["HTTPS"]) ? 'https://' : 'http://';
-
-    // Localize ajaxurl with protocol
-    $params = array(
-        'ajaxurl' => admin_url( 'admin-ajax.php', $protocol )
-    );
-    wp_localize_script( 'gm_contact', 'gm_contact', $params );
+// Register CSS
+add_action( 'wp_enqueue_scripts', 'gm_register_css' );
+function gm_register_css()
+{
+    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm_contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
 }
 
 /* *******************************
  * - Contact Form Shortcode
  * *******************************/
 
-// Prepare the gm_contact.css file to be called.
-add_action( 'wp_enqueue_scripts', 'gm_register_css' );
-function gm_register_css() {
-    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm_contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
-}
-
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
     require_once('gm-contact-form.php');
+
+    // Add the contact.js file
+    wp_enqueue_script('gm-contact-js');
 
     // Add the gm_contact.css file
     wp_enqueue_style('gm-contact-css');
@@ -77,6 +68,7 @@ function gm_email_form() {
  * - Settings Page
  * *******************************/
 
+// Ad the GM Contact setting option/page
 add_action('admin_menu', 'gm_contact_add_page');
 function gm_contact_add_page()
 {
