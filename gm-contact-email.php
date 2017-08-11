@@ -26,7 +26,7 @@ function gm_register_js()
 add_action( 'wp_enqueue_scripts', 'gm_register_css' );
 function gm_register_css()
 {
-    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm_contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
+    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm-contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
 }
 
 /* *******************************
@@ -40,7 +40,7 @@ function gm_email_form() {
     // Add the contact.js file
     wp_enqueue_script('gm-contact-js');
 
-    // Add the gm_contact.css file
+    // Add the gm-contact.css file
     wp_enqueue_style('gm-contact-css');
 
     $auto_p_flag = false;
