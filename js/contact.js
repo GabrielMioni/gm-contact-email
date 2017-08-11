@@ -8,21 +8,30 @@
      * If response from gm-contact-email.php is 1, display thank you message. Else, parse JSON object
      * into different error messages and display them.
      *
-     * @param   {int|string}    resp    Response from gm_contact_ajax() in gm-contact-email.php
-     * @param   {HTMLElement}   form    The HTML form element being submitted.
+     * @param   {int|string}    resp     Response from gm_contact_ajax() in gm-contact-email.php
+     * @param   {HTMLElement}   form     The HTML form element being submitted.
+     * @param   {int}           msg_type Set to 1 for success message. Else will display generic error.
      */
-    function set_response_message(resp, form)
+    function set_response_message(resp, form, msg_type)
     {
-        var success_elm = "<div class='response'>Thank you! Your message has been sent.</div>";
+        var msg_elm = '';
+
+        if (msg_type === 1)
+        {
+            msg_elm = "<div class='response'>Thank you! Your message has been sent.</div>";
+        } else {
+            msg_elm = "<div class='response'>There was a problem sending your email. Please try again later.</div>";
+        }
 
         if (resp === '1')
         {
+            var form_parent = form.parent();
+
             // Email was sent, response from gm_contact_email_send === 1
             form.fadeOut(500, function () {
                 $(this).remove();
+                form_parent.append(msg_elm);
             });
-
-            $(document).find('.entry-content').append(success_elm);
         } else {
 
             /*  Email was *not* sent. Response from gm_email_send is a JSON object.
@@ -206,11 +215,11 @@
                 data: data,
                 success: function(resp)
                 {
-                    set_response_message(resp, form);
+                    set_response_message(resp, form, 1);
                 },
                 error: function(resp)
                 {
-                    console.log(resp)
+                    set_response_message(resp, form, 0);
                 }
 
             }); // end ajax
