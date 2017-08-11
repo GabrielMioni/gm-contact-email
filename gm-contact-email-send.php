@@ -1,6 +1,6 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-includes/class-phpmailer.php');
+require_once(ABSPATH . WPINC . '/class-phpmailer.php');
 
 /**
  * Validates form inputs from the HTML form built at gm_contact_form.php. Most interaction with this class will
