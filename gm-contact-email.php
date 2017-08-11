@@ -50,7 +50,7 @@ function gm_register_css() {
 
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
-    require_once('gm_contact_form.php');
+    require_once('gm-contact-form.php');
 
     // Add the gm_contact.css file
     wp_enqueue_style('gm-contact-css');
