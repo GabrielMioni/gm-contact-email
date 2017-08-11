@@ -18,7 +18,7 @@ class gm_contact_email_send {
     protected $honey_pot_is_empty = null;
 
     /** @var bool|null  flag for whether request is Ajax.  */
-    protected $is_ajax            = null;
+    protected $is_ajax      = null;
 
     /** @var array  Holds input data from the HTML contact form. */
     protected $input_data   = array();
@@ -120,7 +120,7 @@ class gm_contact_email_send {
                     break;
                 default:
                     // Something is amiss
-                    $msg = ucfirst("The $key input is incorrect.");
+                    $msg = "The $key input is incorrect.";
                     break;
             }
             $error_msgs[$key] = $msg;
