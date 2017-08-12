@@ -1,11 +1,38 @@
 <?php
 /*
-Plugin Name: Gabriel's Contact Email
+Plugin Name: Gabriel's Contact Form Email
 Plugin URI: http://gabrielmioni.com
-Description: This plugin sends a contact email
+Description: Simple contact form functionality. Example at gabrielmioni.com/contact
 Author: Gabriel Mioni
 Author URI: http://gabrielmioni.com
+
+Copyright 2017 Gabriel Mioni <email : gabriel@gabrielmioni.com>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+
+/**
+ * @package     GM-Contact
+ * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
+ *
+ * This file does the following:
+ * 1. Registers CSS and JS files used for GM-Contact
+ * 2. Registers a shortcode that lets the user set the HTML contact form on WordPress pages
+ * 3. Creates an options page on the WordPress Admin Panel at Settings > GM Contact
+ * 4. Handles Ajax requests when the contact form is submitted.
+ * 5. Handles non-Ajax requests if JS is disabled.
+ */
 
 if (!isset($_SESSION))
 {
@@ -68,7 +95,7 @@ function gm_email_form() {
  * - Settings Page
  * *******************************/
 
-// Ad the GM Contact setting option/page
+// Add the GM Contact setting option/page
 add_action('admin_menu', 'gm_contact_add_page');
 function gm_contact_add_page()
 {
