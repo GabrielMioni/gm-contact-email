@@ -213,7 +213,7 @@ add_action('wp_ajax_nopriv_gm_contact_ajax', 'gm_contact_ajax');
 add_action('wp_ajax_gm_contact_ajax', 'gm_contact_ajax');
 function gm_contact_ajax() {
 
-    require_once('gm-contact-email-send.php');
+    require_once('gm-contact-send-email.php');
 
     $data = $_REQUEST['form_data'];
 
@@ -243,7 +243,7 @@ function gm_contact_check_api()
 
     if ($api_set === true)
     {
-        require_once(dirname(__FILE__) . '/gm-contact-email-send.php');
+        require_once(dirname(__FILE__) . '/gm-contact-send-email.php');
 
         new gm_contact_email_send();
     }
