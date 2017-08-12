@@ -1,5 +1,5 @@
 /**
- * @package     GM-Contact
+ * @package     GM-Contact-Email
  * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
  *
  * This file does the following:

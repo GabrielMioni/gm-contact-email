@@ -3,7 +3,7 @@
 require_once(ABSPATH . WPINC . '/class-phpmailer.php');
 
 /**
- * @package     GM-Contact
+ * @package     GM-Contact-Email
  * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
  */
 
