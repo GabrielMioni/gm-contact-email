@@ -3,6 +3,12 @@
 require_once(ABSPATH . WPINC . '/class-phpmailer.php');
 
 /**
+ * @package     GM-Contact
+ * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
+ */
+
+
+/**
  * Validates form inputs from the HTML form built at gm-contact-form.php. Most interaction with this class will
  * be via an Ajax call made by the gm_contact_ajax() function found in gm-contact-email.php, however if JS is disabled
  * the class is also called at form-action.php

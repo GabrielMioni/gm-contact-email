@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @package     GM-Contact
+ * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
+ */
+
+/**
  * Builds either the HTML contact form or a thank you message. The thank you message is set if $_SESSION['gm_success']
  * is set. Else, the contact form is set.
  *
