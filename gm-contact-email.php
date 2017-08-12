@@ -19,7 +19,7 @@ define( 'GM_CONTACT_VERSION', '1.0' );
 add_action('wp_enqueue_scripts', 'gm_register_js');
 function gm_register_js()
 {
-    wp_register_script( 'gm-contact-js', plugins_url( '/js/contact.js', __FILE__ ), array('jquery'), GM_CONTACT_VERSION, true );
+    wp_register_script( 'gm-contact-js', plugins_url( '/js/gm-contact.js', __FILE__ ), array('jquery'), GM_CONTACT_VERSION, true );
 }
 
 // Register CSS
@@ -37,7 +37,7 @@ add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
     require_once('gm-contact-form.php');
 
-    // Add the contact.js file
+    // Add the gm-contact.js file
     wp_enqueue_script('gm-contact-js');
 
     // Add the gm-contact.css file
