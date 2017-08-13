@@ -42,18 +42,31 @@ if (!isset($_SESSION))
 // Plugin version, bump it up if you update the plugin
 define( 'GM_CONTACT_VERSION', '1.0' );
 
-// Register JS
-add_action('wp_enqueue_scripts', 'gm_register_js');
-function gm_register_js()
-{
-    wp_register_script( 'gm-contact-js', plugins_url( '/js/gm-contact.js', __FILE__ ), array('jquery'), GM_CONTACT_VERSION, true );
-}
-
 // Register CSS
 add_action( 'wp_enqueue_scripts', 'gm_register_css' );
 function gm_register_css()
 {
     wp_register_style( 'gm-contact-css', plugins_url( '/css/gm-contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
+}
+
+// Enqueue the script, in the footer
+add_action( 'template_redirect', 'gm_add_contact_js');
+function gm_add_contact_js() {
+
+    // Enqueue the script
+    wp_enqueue_script( 'gm_contact',
+        plugin_dir_url( __FILE__ ).'js/gm-contact.js',
+        array('jquery'), GM_CONTACT_VERSION, true
+    );
+
+    // Get current page protocol.
+    $protocol = isset( $_SERVER["HTTPS"]) ? 'https://' : 'http://';
+
+    // Localize ajaxurl with protocol
+    $params = array(
+        'ajaxurl' => admin_url( 'admin-ajax.php', $protocol )
+    );
+    wp_localize_script( 'gm_contact', 'gm_contact', $params );
 }
 
 /* *******************************
@@ -65,7 +78,7 @@ function gm_email_form() {
     require_once('gm-contact-form.php');
 
     // Add the gm-contact.js file
-    wp_enqueue_script('gm-contact-js');
+//    wp_enqueue_script('gm-contact-js');
 
     // Add the gm-contact.css file
     wp_enqueue_style('gm-contact-css');
@@ -185,7 +198,7 @@ function gm_contact_validate_settings($input )
     {
         $reason = 'Address cannot be empty!<br>';
     }
-    
+
     if(trim($check['name'] === ''))
     {
         $reason .= 'The name field cannot be blank';
