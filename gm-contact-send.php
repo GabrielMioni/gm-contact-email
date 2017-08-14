@@ -269,14 +269,14 @@ class gm_contact_email_send {
     }
 
     /**
-     * Loop through $error_msgs and set $_SESSION error messages with the value of each element in $error_msgs
+     * Loop through $message_array and set $_SESSION error messages with the value of each element in $message_array
      *
-     * @param   array   $error_msgs     Array of error messages.
-     * @param   string  $prepend_key    The value that should be used to build the begining of the new $_SESSION index.
+     * @param   array   $message_array  Array of error messages.
+     * @param   string  $prepend_key    The value that should be used to build the beginning of the new $_SESSION index.
      */
-    protected function set_session_message(array $error_msgs, $prepend_key)
+    protected function set_session_message(array $message_array, $prepend_key)
     {
-        foreach ($error_msgs as $key=> $value)
+        foreach ($message_array as $key=> $value)
         {
             $session_index = $prepend_key . $key;
             $_SESSION[$session_index] = $value;
