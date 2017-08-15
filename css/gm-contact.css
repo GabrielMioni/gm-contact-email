@@ -1,21 +1,21 @@
-form#contact {
+form#gm-contact {
     font-family: "Oswald",sans-serif;
     margin: 0 auto;
     width: 80%;
 }
 
-#contact label {
+#gm-contact label {
     font-size: 20px;
     margin-bottom: 5px;
 }
 
-#contact label .asterisk {
+#gm-contact label .gm-asterisk {
     vertical-align: middle;
 }
 
-#contact label,
-#contact input[type='text'],
-#contact textarea
+#gm-contact label,
+#gm-contact input[type='text'],
+#gm-contact textarea
 {
     display: block;
     min-width: 100%;
@@ -24,21 +24,24 @@ form#contact {
 }
 
 #content input[type="text"],
-#contact textarea {
+#gm-contact textarea {
     font-size: 20px;
     padding: 10px;
 }
 
-#contact input[type="text"] {
+#gm-contact input[type="text"] {
     height: 40px;
     margin-bottom: 15px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-top: 5px;
 }
 
-#contact textarea {
+#gm-contact textarea {
     min-height: 300px;
 }
 
-#contact > label > .error {
+#gm-contact > label > .gm-error {
     background: #FFDBDB;
     bottom: 2px;
     color: #FF0000;
@@ -50,10 +53,4 @@ form#contact {
     padding-right: 20px;
     position: relative;
     display: inline-block;
-}
-
-#contact > label .fa {
-    bottom: 3px;
-    font-size: 10px;
-    position: relative;
 }
