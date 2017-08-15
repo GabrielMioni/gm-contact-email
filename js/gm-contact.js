@@ -67,7 +67,7 @@
             if (error_obj.hasOwnProperty(key))
             {
                 var error_msg = error_obj[key];
-                var error_elm = '<div class="error">' + error_msg + '</div>';
+                var error_elm = '<div class="gm-error">' + error_msg + '</div>';
 
                 var label_elm = $('label[for='+ key +']');
 
@@ -80,7 +80,7 @@
      * Remove errors if present before a new form submit
      */
     function remove_all_errors() {
-        $('.error').each(function () {
+        $('.gm-error').each(function () {
             $(this).remove();
         })
     }
@@ -206,7 +206,7 @@
     }
 
     // Submitting the form.
-    $('#contact').find('input[type="submit"]').on('click', function(e){
+    $('#gm-contact').find('input[type="submit"]').on('click', function(e){
 
         e.preventDefault();
 
