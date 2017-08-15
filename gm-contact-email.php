@@ -1,6 +1,7 @@
 <?php
 /*
 Plugin Name: GM-Contact-Email
+Version: 1.0
 Plugin URI: http://gabrielmioni.com
 Description: Simple contact form functionality. Example at gabrielmioni.com/contact
 Author: Gabriel Mioni
