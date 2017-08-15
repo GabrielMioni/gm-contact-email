@@ -79,7 +79,7 @@ class gm_contact_form
         {
             $error_msg = $_SESSION[$error_index];
             unset($_SESSION[$error_index]);
-            return "<span class='error'>$error_msg</span>";
+            return "<div class='gm-error'>$error_msg</div>";
         }
 
         return '';
