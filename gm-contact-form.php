@@ -49,8 +49,8 @@ class gm_contact_form
         $value_company = $this->set_input_value('gm_value_company');
         $value_message = $this->set_input_value('gm_value_message');
 
-        $form = "<form id='contact' method='post' action='$form_action'>
-                    <label for='name'>Your Name <span class='asterisk'>*</span> $error_name</label>
+        $form = "<form id='gm-contact' method='post' action='$form_action'>
+                    <label for='name'>Your Name <span class='gm-asterisk'>*</span> $error_name</label>
                     <input name='name' value='$value_name' type='text'>
         
                     <label for='email'>Your Email <span class='asterisk'>*</span> $error_email</label>
