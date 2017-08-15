@@ -77,6 +77,66 @@
     }
 
     /**
+     * Checks text inputs and textarea where errors might be present. If the input entered passes validation,
+     * error will be removed.
+     *
+     * - The 'name' and 'message' input and textarea, value will pass validation as long as it isn't whitespace.
+     * - The 'email' input must be in valid format for an email address.
+     */
+    function remove_error_on_input() {
+        var text_input = $(document).find('#gm-contact').find('input[type="text"], textarea');
+
+        text_input.on('input', function(){
+
+            // Name attribute will be 'name', 'email', 'company' or 'email'
+            var name = $(this).attr('name');
+
+            // Find the label element. If .gm-error is present it will be a child of the label element.
+            var label = $(this).prev('label');
+
+            var error = label.find('.gm-error');
+
+            if (error.length <= 0)
+            {
+                // If there is no .gm-error element, stop.
+                return;
+            }
+
+            var input_value = $(this).val().trim();
+
+            // Flag that indicates if the .gm-error element should be removed.
+            var remove_error = false;
+
+            if (name === 'name' || name === 'message')
+            {
+                if (input_value !== '')
+                {
+                    remove_error = true;
+                }
+            }
+
+            if (name === 'email')
+            {
+                // Remove the .gm-error element if the input value is formatted like an email address.
+                var email_is_valid = validate_email(input_value);
+
+                if (email_is_valid === true)
+                {
+                    remove_error = true;
+                }
+            }
+
+            // Fadeout and remove error message if the input passed validation.
+            if (remove_error === true)
+            {
+                error.fadeOut(250, function(){
+                    error.remove();
+                });
+            }
+        });
+    }
+
+    /**
      * Remove errors if present before a new form submit
      */
     function remove_all_errors() {
@@ -204,6 +264,9 @@
         var pattern = /^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
         return pattern.test(email_string);
     }
+
+    // Remove errors
+    remove_error_on_input();
 
     // Submitting the form.
     $('#gm-contact').find('input[type="submit"]').on('click', function(e){
