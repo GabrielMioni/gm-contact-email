@@ -18,7 +18,7 @@ require_once(ABSPATH . WPINC . '/class-phpmailer.php');
  * and validation error messages are stored in $_SESSION variables that are used to display content and then destroyed
  * at gm-form-html.php
  */
-class gm_contact_email_send {
+class gm_contact_email {
 
     /** @var bool|null  flag for whether the honeypot input is empty. */
     protected $honey_pot_is_empty = null;
