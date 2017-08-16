@@ -83,7 +83,7 @@ function gm_add_contact_js() {
 
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
-    require_once('gm-form-html.php');
+    require_once('gm-html-html.php');
 
     // Add the gm-contact.js file
 //    wp_enqueue_script('gm-contact-js');
@@ -104,7 +104,7 @@ function gm_email_form() {
         remove_filter( 'the_excerpt', 'wpautop' );
     }
 
-    $build_html = new gm_contact_form();
+    $build_html = new gm_contact_html();
     echo $build_html->return_html();
 
     // If wpautop had been set previously, re-enable it.
