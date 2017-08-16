@@ -13,10 +13,10 @@
 (function($) {
 
     /**
-     * If response from gm-contact-email.php is 1, display thank you message. Else, parse JSON object
+     * If response from gm-contact-form.php is 1, display thank you message. Else, parse JSON object
      * into different error messages and display them.
      *
-     * @param   {int|string}    resp     Response from gm_contact_ajax() in gm-contact-email.php
+     * @param   {int|string}    resp     Response from gm_contact_ajax() in gm-contact-form.php
      * @param   {HTMLElement}   form     The HTML form element being submitted.
      * @param   {int}           msg_type Set to 1 for success message. Else will display generic error.
      */
