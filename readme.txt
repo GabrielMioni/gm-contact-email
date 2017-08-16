@@ -1,6 +1,5 @@
-=== GM Contact Email ===
+=== GM Contact Form ===
 Contributors: Gabriel Mioni
-Donate link:
 Tags: contact form, form, email, javascript, ajax
 Requires at least: 3.0.1
 Tested up to: 4.5.3
