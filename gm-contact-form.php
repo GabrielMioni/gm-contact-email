@@ -83,7 +83,7 @@ function gm_add_contact_js() {
 
 add_shortcode('gm-email-form', 'gm_email_form');
 function gm_email_form() {
-    require_once('gm-html-html.php');
+    require_once('gm-contact-html.php');
 
     // Add the gm-contact.js file
 //    wp_enqueue_script('gm-contact-js');
