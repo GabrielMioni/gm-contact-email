@@ -12,7 +12,7 @@
  * Class gm_contact_form is called in the gm_email_form() function and displayed using the WordPress short code
  * [gm-email-form][/gm-email-form]
  */
-class gm_form_html
+class gm_contact_form
 {
     /** @var    string  Holds HTML for either the contact form or a thank you message. */
     protected $html;
