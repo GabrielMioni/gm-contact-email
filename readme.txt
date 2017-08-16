@@ -11,7 +11,7 @@ A simple foolproof contact form for WordPress.
 
 == Description ==
 
-GM Contact Email is an easy to implement and use way to setup a contact form on your WordPress site. Configuration
+GM Contact Form is an easy to implement and use way to setup a contact form on your WordPress site. Configuration
 is optional. The plugin supports Ajax, but if JavaScript is unavailable on the client's browser it will still work.
 
 The GM Contact Form includes the following inputs. Those marked by asterisks are required:
@@ -21,7 +21,7 @@ The GM Contact Form includes the following inputs. Those marked by asterisks are
 - Message
 
 Once installed and activated, the GM Contact Form can be placed on a WordPress page by using the shortcode
-[gm-email-form][/gm-email-form]. It's that simple.
+[gm-contact-form][/gm-contact-form]. It's that simple.
 
 When a user submits the Contact Form, they're receive a thank you message when the email is sent. If the contact form
 user missed putting data in one of the required fields or if the email address they provided doesn't look right, they'll
