@@ -1,273 +1,312 @@
 <?php
-/*
-Plugin Name: GM-Contact-Email
-Plugin URI: http://gabrielmioni.com
-Description: Simple contact form functionality. Example at gabrielmioni.com/contact
-Author: Gabriel Mioni
-Author URI: http://gabrielmioni.com
 
-Copyright 2017 Gabriel Mioni <email : gabriel@gabrielmioni.com>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License, version 2, as
-published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+require_once(ABSPATH . WPINC . '/class-phpmailer.php');
 
 /**
- * @package     GM-Contact-Form
+ * @package     GM-Contact-Email
  * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
- *
- * This file does the following:
- * 1. Registers CSS and JS files used for GM-Contact
- * 2. Registers a shortcode that lets the user set the HTML contact form on WordPress pages
- * 3. Creates an options page on the WordPress Admin Panel at Settings > GM Contact
- * 4. Handles Ajax requests when the contact form is submitted.
- * 5. Handles non-Ajax requests if JS is disabled.
  */
 
-if (!isset($_SESSION))
-{
-    session_start();
-}
 
-// Plugin version, bump it up if you update the plugin
-define( 'GM_CONTACT_VERSION', '1.0' );
+/**
+ * Validates form inputs from the HTML form built at gm-form-html.php. Most interaction with this class will
+ * be via an Ajax call made by the gm_contact_ajax() function found in gm-contact-form.php, however if JS is disabled
+ * the class is also called at form-action.php
+ *
+ * If request is via Ajax, the class can return a response. Returns 1 if submit is successful. Else returns a JSON
+ * encoded array that can be parsed to display error messages. If JS *is* disabled, previously submitted input values
+ * and validation error messages are stored in $_SESSION variables that are used to display content and then destroyed
+ * at gm-form-html.php
+ */
+class gm_contact_email_send {
 
-// Register CSS
-add_action( 'wp_enqueue_scripts', 'gm_register_css' );
-function gm_register_css()
-{
-    wp_register_style( 'gm-contact-css', plugins_url( '/css/gm-contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
-}
+    /** @var bool|null  flag for whether the honeypot input is empty. */
+    protected $honey_pot_is_empty = null;
 
-// Register Google Fonts
-add_action('wp_enqueue_scripts', 'gm_register_oswald');
-function gm_register_oswald()
-{
-    wp_enqueue_style( 'gm-google-oswald', 'https://fonts.googleapis.com/css?family=Fjalla+One|Oswald', false );
-}
+    /** @var bool|null  flag for whether request is Ajax.  */
+    protected $is_ajax      = null;
 
-// Enqueue the script, in the footer
-add_action( 'template_redirect', 'gm_add_contact_js');
-function gm_add_contact_js() {
+    /** @var array  Holds input data from the HTML contact form. */
+    protected $input_data   = array();
+    /** @var array  Holds array elements representing which inputs failed and why. 0 = empty, -1 = invalid. */
+    protected $errors       = array();
+    /** @var array  Holds text error messages that will be displayed on the email contact form. */
+    protected $error_msgs   = array();
 
-    // Enqueue the script
-    wp_enqueue_script( 'gm_contact',
-        plugin_dir_url( __FILE__ ).'js/gm-contact.js',
-        array('jquery'), GM_CONTACT_VERSION, true
-    );
 
-    // Get current page protocol.
-    $protocol = isset( $_SERVER["HTTPS"]) ? 'https://' : 'http://';
-
-    // Localize ajaxurl with protocol
-    $params = array(
-        'ajaxurl' => admin_url( 'admin-ajax.php', $protocol )
-    );
-    wp_localize_script( 'gm_contact', 'gm_contact', $params );
-}
-
-/* *******************************
- * - Contact Form Shortcode
- * *******************************/
-
-add_shortcode('gm-email-form', 'gm_email_form');
-function gm_email_form() {
-    require_once('gm-contact-form.php');
-
-    // Add the gm-contact.js file
-//    wp_enqueue_script('gm-contact-js');
-
-    // Add the gm-contact.css file
-    wp_enqueue_style('gm-contact-css');
-
-    // Add Google Oswlad font
-    wp_enqueue_style('gm-google-oswald');
-
-    $auto_p_flag = false;
-
-    // If wpautop filter is set, temporarily disable it.
-    if ( has_filter( 'the_content', 'wpautop' ) )
+    public function __construct()
     {
-        $auto_p_flag = true;
-        remove_filter( 'the_content', 'wpautop' );
-        remove_filter( 'the_excerpt', 'wpautop' );
+        $this->honey_pot_is_empty    = isset($_POST['covfefe']) ? false : true;
+        $this->is_ajax               = isset($_POST['is_ajax']) ? true : false;
+
+        $this->input_data['name']    = $this->check_text('name', $this->errors);
+        $this->input_data['email']   = $this->check_email('email', $this->errors);
+        $this->input_data['company'] = $this->check_text('company');
+        $this->input_data['message'] = $this->check_text('message', $this->errors);
+
+        $this->error_msgs = $this->build_error_msgs($this->errors);
+
+        $this->try_send_email($this->error_msgs, $this->input_data);
+
+        $this->non_ajax_processing($this->is_ajax, $this->error_msgs, $this->input_data);
     }
 
-    $build_html = new gm_contact_form();
-    echo $build_html->return_html();
-
-    // If wpautop had been set previously, re-enable it.
-    if ($auto_p_flag === true)
+    /**
+     * Checks $_POST values. If the input is required, the error array can be set as an argument. If the $error_array
+     * is an array and the input value is blank, $error_array[$post_index] is set to 0.
+     *
+     * @param   $post_index     string      The index name for the $_POST value being checked.
+     * @param   $error_array    null|array  Default is null. If an array is provided, input value is required.
+     * @return  string          string      Either whitespace or sanitized value of $_POST[$post_index]
+     */
+    protected function check_text($post_index, &$error_array = null)
     {
-        add_filter( 'the_content', 'wpautop' );
-        add_filter( 'the_excerpt', 'wpautop' );
-    }
-}
+        $input = isset($_POST[$post_index]) ? trim($_POST[$post_index]) : '';
 
-/* *******************************
- * - Settings Page
- * *******************************/
+        if ($input === '' && is_array($error_array))
+        {
+            $error_array[$post_index] = 0;
+        }
 
-// Add the GM Contact setting option/page
-add_action('admin_menu', 'gm_contact_add_page');
-function gm_contact_add_page()
-{
-    add_options_page('GM Contact', 'GM Contact', 'manage_options', 'gm_contact', 'gm_contact_option_page');
-}
-
-// Display GM Contact Settings
-function gm_contact_option_page()
-{
-    ?>
-    <form action="options.php" method="post">
-        <?php   settings_fields('gm_contact_address');  ?>
-        <?php   do_settings_sections('gm_contact');     ?>
-        <input name="Submit" type="submit" class="button button-primary" value="Save Address">
-    </form>
-
-    <?php
-}
-
-// Register Settings
-add_action('admin_init', 'gm_contact_admin_init');
-function gm_contact_admin_init()
-{
-    register_setting('gm_contact_address', 'gm_contact_address', 'gm_contact_validate_address');
-    add_settings_section('gm_contact_main', 'GM Contact Settings', 'gm_contact_section_text', 'gm_contact');
-    add_settings_field('gm_contact_text_string', 'Address:', 'gm_contact_address_input', 'gm_contact', 'gm_contact_main');
-    add_settings_field('gm_contact_name_string', 'Name:', 'gm_contact_name_input', 'gm_contact', 'gm_contact_main');
-}
-
-// Basic instructions for the setting page.
-function gm_contact_section_text()
-{
-    echo '<p>Enter your name and email address below. This will set the recipient\'s name and email address for the Contact Form!</p>';
-}
-
-// Email Address input
-function gm_contact_address_input()
-{
-    $option  = get_option('gm_contact_address');
-
-    $address = '';
-
-    if (is_array($option))
-    {
-        $address = isset($option['address']) ? $option['address'] : '';
+        return strip_tags($input);
     }
 
-    $input =  "<input id='address' name='gm_contact_address[address]' type='text' value='$address'>";
-
-    echo $input;
-}
-
-// Name input
-function gm_contact_name_input()
-{
-    $option  = get_option('gm_contact_address');
-
-    $name = '';
-
-    if (is_array($option))
+    /**
+     * Checks if email is either blank or invalid. If email is blank, $error_array[$email_index] is 0. If email is
+     * invalid, $error_array[$email_index] is -1.
+     *
+     * @param   $email_index        string  The index name for the email input.
+     * @param   array $error_array          The error array that will be passed error data by reference.
+     * @return  string              string  Either whitespace or sanitized value of $_POST[$email_index]
+     */
+    protected function check_email($email_index, array &$error_array)
     {
-        $name    = isset($option['name']) ? $option['name'] : '';
+        $email_input = $this->check_text($email_index, $error_array);
+
+        if ($email_input === '')
+        {
+            return '';
+        }
+
+        /* Clean the email input */
+        $email = filter_var($email_input, FILTER_SANITIZE_EMAIL);
+
+        /* Validate email */
+        $validate = filter_var($email, FILTER_VALIDATE_EMAIL);
+
+        if ($validate === false)
+        {
+            $error_array[$email_index] = -1;
+        }
+
+        return $email;
     }
 
-    $input = "<input id='name' name='gm_contact_address[name]' type='text' value='$name'>";
-
-    echo $input;
-}
-
-// Setting validation
-function gm_contact_validate_settings($input )
-{
-    $current = get_option('gm_contact_address');
-
-    $check['address'] = strip_tags($input['address']);
-    $check['name']    = strip_tags($input['name']);
-
-    $reason = '';
-
-    if (filter_var($check['address'], FILTER_VALIDATE_EMAIL) === false)
+    /**
+     * Builds an array of validation error messages that can be displayed to the user submitting the email.
+     *
+     * @param   array   $error_array    The array containing results from $_POST input checks.
+     * @return  array                   An array with validation messages for the person submitting the email.
+     */
+    protected function build_error_msgs(array $error_array)
     {
-        $bad_input = $check['address'];
-        $reason = "You submitted '$bad_input.' That value is not in valid format.<br>";
+        $error_msgs = array();
+
+        foreach ($error_array as $key=>$value)
+        {
+            switch ($value)
+            {
+                case 0:
+                    // The input was blank.
+                    $msg = ucfirst("$key cannot be blank");
+                    break;
+                case -1:
+                    // The input was invalid.
+                    $msg = "Please make sure the $key field is in valid format";
+                    break;
+                default:
+                    // Something is amiss
+                    $msg = "The $key input is incorrect.";
+                    break;
+            }
+            $error_msgs[$key] = $msg;
+        }
+
+        return $error_msgs;
     }
 
-    if(trim($check['address']) === '')
+    /**
+     * If no errors are present, send the email.
+     *
+     * @param   array   $error_msgs     Array of error messages.
+     * @param   array   $input_data     Values from the email submit form.
+     * @return  bool    True if email was sent. Else false.
+     */
+    protected function try_send_email(array &$error_msgs, array $input_data)
     {
-        $reason = 'Address cannot be empty!<br>';
+        // If there are errors, just return false.
+        if (!empty($error_msgs))
+        {
+            return false;
+        }
+
+        $sender_name    = stripslashes($input_data['name']);
+        $sender_email   = $input_data['email'];
+        $Sender_company = stripslashes($input_data['company']);
+        $sender_message = stripslashes($input_data['message']);
+
+        $content  = "Name: $sender_name \n";
+        $content .= "Email: $sender_email \n";
+        $content .= "Company: $Sender_company \n\n";
+        $content .= "Message: \n\n";
+        $content .= $sender_message;
+
+        $mail = new PHPMailer;
+
+        $gm_options        = $this->get_receiver_data();
+
+        $recipient_address = $gm_options['address'];
+        $recipient_name    = $gm_options['name'];
+        $recipient_site    = $this->get_sitename();
+
+        $mail->setFrom($sender_email, $sender_name);
+        $mail->addAddress($recipient_address, $recipient_name);
+        $mail->Subject  = 'Contact From ' . $recipient_site;
+        $mail->Body     = $content;
+
+        if(!$mail->Send())
+        {
+            error_log("PHPMailer: " . $mail->ErrorInfo);
+            $error_msgs['generic'] = 'There was a problem sending your email. Please try again later.';
+
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
-    if(trim($check['name'] === ''))
+    /**
+     * Looks for options data from the gm_contact_address table. If no data is found, try getting an email address
+     * from the admin_email table.
+     *
+     * @return array    Array will contain 'address' and 'name' elements.
+     */
+    protected function get_receiver_data()
     {
-        $reason .= 'The name field cannot be blank';
+        $gm_options = get_option('gm_contact_address');
+
+        $receiver_data = array();
+
+        $receiver_data['address'] = isset($gm_options['address']) ? $gm_options['address'] : '';
+        $receiver_data['name'] = isset($gm_options['name']) ? $gm_options['name'] : 'Admin';
+
+        if ($receiver_data['address'] !== '')
+        {
+            $validate_gm_email = filter_var($receiver_data['address'], FILTER_SANITIZE_EMAIL);
+
+            if ($validate_gm_email !== false)
+            {
+                return $receiver_data;
+            }
+        }
+
+        $admin_email = get_option('admin_email');
+
+        $receiver_data['address'] = is_string($admin_email) ? $admin_email : '';
+
+        return $receiver_data;
+
     }
 
-    if($reason !== '')
+    /**
+     * Check WordPress option table site_url for data. If a URL is present, get the site name. Else return
+     * the generic 'Contact Form.'
+     *
+     * @return string   If a URL is present on the site_url table, return site name. Else return 'Contact Form.'
+     */
+    protected function get_sitename()
     {
-        add_settings_error(
-            'gm_contact_text_string',
-            'gm_contact_texterror',
-            $reason,
-            'error'
-        );
-        return $current;
+        $generic = 'Contact Form';
+        $wp_url = get_option('site_url');
+
+        if (is_string($wp_url) && trim($wp_url) !== '')
+        {
+            $url_parse = parse_url($wp_url);
+            $site_name = isset($url_parse['host']) ? $url_parse['host'] : $generic;
+
+            return $site_name;
+        } else {
+            return $generic;
+        }
     }
 
-    return $check;
-}
-
-
-/* *******************************
- * - Ajax Handler
- * *******************************/
-add_action('wp_ajax_nopriv_gm_contact_ajax', 'gm_contact_ajax');
-add_action('wp_ajax_gm_contact_ajax', 'gm_contact_ajax');
-function gm_contact_ajax() {
-
-    require_once('gm-contact-send.php');
-
-    $data = $_REQUEST['form_data'];
-
-    parse_str($data, $get_array);
-
-    $_POST['is_ajax'] = 1;
-    $_POST['name']    = $get_array['name'];
-    $_POST['email']   = $get_array['email'];
-    $_POST['company'] = $get_array['company'];
-    $_POST['message'] = $get_array['message'];
-
-    $send_email = new gm_contact_email_send();
-    $send_email_response = $send_email->return_ajax_msg();
-
-    echo $send_email_response;
-
-    die();
-}
-
-/* *******************************
- * - API Handler for non-Ajax
- * *******************************/
-add_action('init', 'gm_contact_check_api');
-function gm_contact_check_api()
-{
-    $api_set = isset($_GET['gm_contact']) ? true : false;
-
-    if ($api_set === true)
+    /**
+     * If this isn't an Ajax call, then do the following:
+     * - 1. Unset previous $_SESSION messages.
+     * - 2. If no errors (all inputs are valid and the email has been sent), set $_SESSION success message
+     * - 3. If there were errors, set $_SESSION messages.
+     * - 4. Redirect to referer.
+     *
+     * @param $is_ajax  bool    Flag stating whether or not the request is Ajax. Set by $_POST['is_ajax']
+     * @param array     $error_msgs     Error messages array. Used to build error session variables.
+     * @param array     $input_data     Input data.
+     */
+    protected function non_ajax_processing($is_ajax, array $error_msgs, array $input_data)
     {
-        require_once(dirname(__FILE__) . '/gm-contact-send.php');
+        if ($is_ajax === false)
+        {
+            if (empty($error_msgs))
+            {
+                $_SESSION['gm_success'] = 1;
+            } else {
+                $this->set_session_message($error_msgs, 'gm_error_');
+                $this->set_session_message($input_data, 'gm_value_');
+            }
 
-        new gm_contact_email_send();
+            $this->do_redirect();
+        }
     }
+
+    /**
+     * Loop through $message_array and set $_SESSION error messages with the value of each element in $message_array
+     *
+     * @param   array   $message_array  Array of error messages.
+     * @param   string  $prepend_key    The value that should be used to build the beginning of the new $_SESSION index.
+     */
+    protected function set_session_message(array $message_array, $prepend_key)
+    {
+        foreach ($message_array as $key=> $value)
+        {
+            $session_index = $prepend_key . $key;
+            $_SESSION[$session_index] = $value;
+        }
+    }
+
+    /**
+     * Sends user back to the page from which the submit page was submitted.
+     */
+    protected function do_redirect()
+    {
+        header('Location: ' . strtok($_SERVER["HTTP_REFERER"],'?'));
+        exit();
+    }
+
+    /**
+     * Returns a response for Ajax requests.
+     *
+     * @return  int|string  returns 1 if no errors are present. Else returns JSON encoded string with error message data.
+     */
+    public function return_ajax_msg()
+    {
+        $error_msgs = $this->error_msgs;
+
+        if (empty($error_msgs))
+        {
+            return 1;
+        }
+
+        return json_encode($error_msgs, true);
+    }
+
 }
