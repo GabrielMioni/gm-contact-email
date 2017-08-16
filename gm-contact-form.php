@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: GM-Contact
+Plugin Name: GM-Contact-Form
 Version: 1.0
 Plugin URI: http://gabrielmioni.com/gm-contact
 Description: Simple contact form functionality. Example at gabrielmioni.com/contact
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /**
- * @package     GM-Contact-Email
+ * @package     GM-Contact-Form
  * @author      Gabriel Mioni <gabriel@gabrielmioni.com>
  *
  * This file does the following:
