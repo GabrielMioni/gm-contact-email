@@ -2,7 +2,7 @@
 /*
 Plugin Name: GM-Contact-Form
 Version: 1.0
-Plugin URI: http://gabrielmioni.com/gm-contact
+Plugin URI: http://gabrielmioni.com/gm-contact-form
 Description: Simple contact form functionality. Example at gabrielmioni.com/contact
 Author: Gabriel Mioni
 Author URI: http://gabrielmioni.com
@@ -246,7 +246,7 @@ function gm_contact_ajax() {
     $_POST['company'] = $get_array['company'];
     $_POST['message'] = $get_array['message'];
 
-    $send_email = new gm_contact_email_send();
+    $send_email = new gm_contact_email();
     $send_email_response = $send_email->return_ajax_msg();
 
     echo $send_email_response;
@@ -266,6 +266,6 @@ function gm_contact_check_api()
     {
         require_once(dirname(__FILE__) . '/gm-contact-email.php');
 
-        new gm_contact_email_send();
+        new gm_contact_email();
     }
 }
