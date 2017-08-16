@@ -9,9 +9,9 @@ require_once(ABSPATH . WPINC . '/class-phpmailer.php');
 
 
 /**
- * Validates form inputs from the HTML form built at gm-form-html.php. Most interaction with this class will
+ * Validates form inputs from the HTML form built at gm-contact-html.php. Most interaction with this class will
  * be via an Ajax call made by the gm_contact_ajax() function found in gm-contact-form.php, however if JS is disabled
- * the class is also called at form-action.php
+ * the class is also called at the non-ajax handler gm_contact_check_api() in gm-contact-form.php
  *
  * If request is via Ajax, the class can return a response. Returns 1 if submit is successful. Else returns a JSON
  * encoded array that can be parsed to display error messages. If JS *is* disabled, previously submitted input values
