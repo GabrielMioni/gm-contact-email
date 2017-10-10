@@ -56,3 +56,5 @@ be available in a later version.
 
 = 1.0 =
 * Initial Release
+- 1.1 -
+* Removed unnecessary Google Font

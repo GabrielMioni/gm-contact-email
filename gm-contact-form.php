@@ -41,7 +41,7 @@ if (!isset($_SESSION))
 }
 
 // Plugin version, bump it up if you update the plugin
-define( 'GM_CONTACT_VERSION', '1.0' );
+define( 'GM_CONTACT_VERSION', '1.1' );
 
 // Register CSS
 add_action( 'wp_enqueue_scripts', 'gm_register_css' );
