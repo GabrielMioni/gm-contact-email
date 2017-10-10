@@ -82,9 +82,6 @@ function gm_email_form() {
     // Add the gm-contact.css file
     wp_enqueue_style('gm-contact-css');
 
-    // Add Google Oswlad font
-    wp_enqueue_style('gm-google-oswald');
-
     $auto_p_flag = false;
 
     // If wpautop filter is set, temporarily disable it.
