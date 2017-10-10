@@ -50,12 +50,6 @@ function gm_register_css()
     wp_register_style( 'gm-contact-css', plugins_url( '/css/gm-contact.css', __FILE__ ), array(), GM_CONTACT_VERSION, 'all' );
 }
 
-// Register Google Fonts
-add_action('wp_enqueue_scripts', 'gm_register_oswald');
-function gm_register_oswald()
-{
-    wp_enqueue_style( 'gm-google-oswald', 'https://fonts.googleapis.com/css?family=Fjalla+One|Oswald', false );
-}
 
 // Enqueue the script, in the footer
 add_action( 'template_redirect', 'gm_add_contact_js');
